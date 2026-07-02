@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Google Sign-In Test</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f0f2f5; }
+        .box { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        button { background-color: #4285F4; color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        #status { margin-top: 20px; font-weight: bold; color: #555; }
+        .user-card { display: none; margin-top: 20px; background: #e8f5e9; padding: 15px; border-radius: 8px; border: 1px solid #c8e6c9; }
+        img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; }
+    </style>
+
+    <!-- صرف کور فائر بیس اور آتھ لائبریری (ڈیٹا بیس کی ضرورت نہیں) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+<div class="box">
+    <h2>Google Sign-In Test Page 🧪</h2>
+    <p>اس پیج پر ہم صرف یہ چیک کر رہے ہیں کہ گوگل لاگ ان کام کرتا ہے یا نہیں۔</p>
+    
+    <button onclick="testLogin()">Test Google Sign-In</button>
+
+    <div id="status">سٹیٹس: ابھی لاگ ان نہیں کیا گیا...</div>
+
+    <!-- کامیابی کی صورت میں یہ نظر آئے گا -->
+    <div id="userCard" class="user-card">
+        <img id="uPic" src="" alt="Profile">
+        <h3 id="uName">Name</h3>
+        <p id="uEmail">Email</p>
+        <button style="background-color: #d32f2f;" onclick="testLogout()">Log Out</button>
+    </div>
+</div>
+
+<script>
+// آپ کی فائر بیس کنفیگریشن
+const firebaseConfig = {
+  apiKey: "AIzaSyC8py3oEQFtzWIT_K0nIMK5oHoQYG6-zig",
+  authDomain: "milk-order-48d48.firebaseapp.com",
+  projectId: "milk-order-48d48",
+  storageBucket: "milk-order-48d48.firebasestorage.app",
+  messagingSenderId: "171586337857",
+  appId: "1:171586337857:web:4e16c73f163089460e9ac0"
+};
+
+// فائر بیس شروع کریں
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// 1. بٹن پر کلک کرنے سے یہ چلے گا
+function testLogin() {
+    document.getElementById('status').innerText = "سٹیٹس: گوگل پیج پر ری ڈائریکٹ ہو رہا ہے...";
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithRedirect(provider);
+}
+
+// 2. گوگل سے واپس آنے کے بعد رزلٹ پکڑنے کا کوڈ
+auth.getRedirectResult()
+.then((result) => {
+    if (result.user) {
+        alert("🎉 مبارک ہو! گوگل سے کامیابی کے ساتھ ڈیٹا مل گیا ہے!");
+        console.log("User Data:", result.user);
+    }
+})
+.catch((error) => {
+    // اگر کوئی بھی مسئلہ ہوا تو یہ الرٹ کوڈ کے ساتھ بتائے گا
+    alert("❌ فائر بیس ایرر کوڈ: " + error.code + "\n\nپیغام: " + error.message);
+    document.getElementById('status').innerText = "سٹیٹس: لاگ ان فیل ہو گیا! الرٹ چیک کریں۔";
+});
+
+// 3. لاگ ان سٹیٹس پر نظر رکھنا
+auth.onAuthStateChanged((user) => {
+    const statusDiv = document.getElementById('status');
+    const cardDiv = document.getElementById('userCard');
+
+    if (user) {
+        statusDiv.innerText = "سٹیٹس: لاگ ان کامیاب! ✅";
+        cardDiv.style.display = "block";
+        
+        document.getElementById('uName').innerText = user.displayName;
+        document.getElementById('uEmail').innerText = user.email;
+        document.getElementById('uPic').src = user.photoURL || "https://via.placeholder.com/150";
+    } else {
+        statusDiv.innerText = "سٹیٹس: ابھی لاگ ان نہیں کیا گیا... ❌";
+        cardDiv.style.display = "none";
+    }
+});
+
+// 4. لاگ آؤٹ
+function testLogout() {
+    auth.signOut().then(() => {
+        alert("لاگ آؤٹ ہو گیا!");
+    });
+}
+</script>
+
+</body>
+</html>
